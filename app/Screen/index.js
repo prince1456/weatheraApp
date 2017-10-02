@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, StatusBar} from 'react-native';
+import { StyleSheet, Text, View, Image, StatusBar, TextInput} from 'react-native';
 import styles from './styles';
-import fetchWeather from '../Components/Api/weather.js';
+import { fetchWeather, fetchWeatherByCity } from '../Components/Api/weather.js';
 import moment from "moment";
 import Icon from 'react-native-vector-icons/Ionicons'
 import countryData from 'country-data'
@@ -31,6 +31,7 @@ export default class Home extends React.Component {
   constructor(props){
     super(props)
     this.state = {
+      city2: 'tokyo',
       city: "default",
       country: "US",
       pressure: 1013.75,
@@ -45,42 +46,71 @@ export default class Home extends React.Component {
 
 componentDidMount(){
   this.getLocation()
+  console.log(this.state.city2);
+
 }
  getLocation () {
    navigator.geolocation.getCurrentPosition(
      (posData) =>  fetchWeather(posData.coords.latitude, posData.coords.longitude)
-     .then( res => (console.log(res),
+     .then( res => {
       this.setState({
-         city: res.city,
-         country: res.country,
-         pressure: res.pressure,
-         temp: Math.round(res.temp),
-         tempMin: res.tempMin,
-         tempMax: res.tempMax,
-         weather: res.weather,
-         windSpeed: res.windSpeed,
-       })
-
-     )),
+        city: res.city,
+        country: res.country,
+        pressure: res.pressure,
+        temp: Math.round(res.temp),
+        tempMin: res.tempMin,
+        tempMax: res.tempMax,
+        weather: res.weather,
+        windSpeed: res.windSpeed
+      });
+      console.log(res);
+    } ),
      (error) => console.log(error),
       {timeout: 10000}
-    )
-   }
+  );
+ }
+  onChangeText (text) {
+    console.log(text);
+  }
+  onSubmitEditing (event) {
+    console.log(event);
+    fetchWeatherByCity (event)
+     .then(res => {
+      this.setState({
+        city: event,
+        country: res.country,
+        pressure: res.pressure,
+        temp: Math.round(res.temp),
+        tempMin: res.tempMin,
+        tempMax: res.tempMax,
+        weather: res.weather,
+        windSpeed: res.windSpeed
+      })
+       console.log(res);
+     })
+    (error) => console.log(error),
+    {timeout: 1000}
+}
+  render () {
 
-
-  render() {
     console.log(this.state.weather);
+    console.log(this.state.city);
     console.log(imagePicture[this.state.weather]);
     return (
 
-      <Image source={imagePicture[this.state.weather]}  style={styles.container}>
-        <Image source={require("./images/bg/shadow.png")}  style={styles.container2}>
-        <StatusBar hidden={this.state.hideStatusBar}/>
-          <View style= {styles.header}>
+      <Image source={imagePicture[this.state.weather]} style={styles.container}>
+        <Image source={require('./images/bg/shadow.png')} style={styles.container2}>
+          <StatusBar hidden={this.state.hideStatusBar} />
+          <View style={styles.header}>
+            <TextInput   style={{height: 40, borderColor: 'gray', borderLeftWidth: 1, width: '100%'}}
+              placeholder='search other cities'
+              onSubmitEditing={(event) => this.onSubmitEditing(event.nativeEvent.text)}
+              // onSubmitEditing={(e) => this.onSubmitEditing(e.nativeEvent.text)}
+            />
                 {/* <Icon style={styles.icon} name ={iconName[this.state.weather]} size={100}/> */}
-                <Text style ={ styles.temp}>{this.state.temp}</Text>
-                <Text style ={ styles.city}>{this.state.city}</Text>
-                <Text style= {styles.country}>{countries[this.state.country].name}</Text>
+              <Text style ={ styles.temp}>{this.state.temp}</Text>
+              <Text style ={ styles.city}>{this.state.city}</Text>
+              <Text style= {styles.country}>{countries[this.state.country].name}</Text>
           </View>
           <View style= { styles.body}>
                 <Text style={styles.date} >
