@@ -87,7 +87,7 @@ componentDidMount(){
         windSpeed: res.windSpeed
       })
        console.log(res);
-     })
+     }),
     (error) => console.log(error),
     {timeout: 1000}
 }
